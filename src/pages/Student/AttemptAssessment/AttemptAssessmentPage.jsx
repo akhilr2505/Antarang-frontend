@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
 import { useAssessment } from '../../../hooks/useAssessment';
 import { useToast } from '../../../hooks/useToast';
 import { ROUTES } from '../../../config/routes';
@@ -8,7 +7,6 @@ import { ProgressBar } from '../../../components/assessment/ProgressBar/Progress
 import { QuestionCard } from '../../../components/assessment/QuestionCard/QuestionCard';
 
 export const AttemptAssessmentPage = () => {
-  const { currentUser } = useAuth();
   const {
     activeAssessment,
     currentQuestionIndex,
@@ -37,14 +35,16 @@ export const AttemptAssessmentPage = () => {
     }
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     if (Object.keys(selectedAnswers).length < activeAssessment.questions.length) {
       showToast('Please answer all questions before submitting.');
       return;
     }
-    const finishedTitle = finishAssessment(currentUser);
-    showToast(`Congratulations! You completed ${finishedTitle}`);
-    navigate(ROUTES.RESULTS);
+    const finishedTitle = await finishAssessment();
+    if (finishedTitle) {
+      showToast(`Congratulations! You completed ${finishedTitle}`);
+      navigate(ROUTES.RESULTS);
+    }
   };
 
   return (

@@ -30,8 +30,8 @@ export const TestEditorPage = () => {
     return null;
   }
 
-  const handleSaveTest = () => {
-    const updated = adminSaveTest();
+  const handleSaveTest = async () => {
+    const updated = await adminSaveTest();
     if (updated) {
       showToast(`"${updated.title}" saved successfully.`);
     }

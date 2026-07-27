@@ -13,6 +13,11 @@ export const authService = {
     return apiClient.post('/auth/logout', {});
   },
 
+  refreshToken: async (refreshToken) => {
+    const res = await apiClient.post('/auth/refresh-token', { refreshToken });
+    return res.data;
+  },
+
   getCurrentUser: async () => {
     const res = await apiClient.get('/auth/me');
     return res.data;

@@ -13,7 +13,8 @@ export const AdminDashboard = () => {
     adminTests,
     setAdminActiveTab,
     adminCreateNewTest,
-    adminOpenTestEditor
+    adminOpenTestEditor,
+    dashboardStats
   } = useAdmin();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -22,8 +23,8 @@ export const AdminDashboard = () => {
 
   const totalAdminQ = adminTests.reduce((sum, t) => sum + (t.questions ? t.questions.length : 0), 0);
 
-  const handleCreateTest = () => {
-    const newTest = adminCreateNewTest();
+  const handleCreateTest = async () => {
+    const newTest = await adminCreateNewTest();
     showToast('New test created.');
     navigate(ROUTES.ADMIN_TEST_EDITOR.replace(':id', newTest.id));
   };
@@ -61,7 +62,7 @@ export const AdminDashboard = () => {
         <div className="stat-card">
           <div className="stat-icon-box coral"><FileText size={24} /></div>
           <div className="stat-content">
-            <div className="stat-number">{adminTests.length}</div>
+            <div className="stat-number">{dashboardStats?.totalAssessments ?? adminTests.length}</div>
             <div className="stat-label">Total Tests</div>
           </div>
         </div>
@@ -75,7 +76,7 @@ export const AdminDashboard = () => {
         <div className="stat-card">
           <div className="stat-icon-box emerald"><Users size={24} /></div>
           <div className="stat-content">
-            <div className="stat-number">{MOCK_STUDENTS.length}</div>
+            <div className="stat-number">{dashboardStats?.totalStudents ?? MOCK_STUDENTS.length}</div>
             <div className="stat-label">Registered Students</div>
           </div>
         </div>
