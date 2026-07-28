@@ -12,6 +12,7 @@ import { LoginPage } from '../pages/Auth/Login/LoginPage';
 import { StudentDashboard } from '../pages/Student/Dashboard/StudentDashboard';
 import { AttemptAssessmentPage } from '../pages/Student/AttemptAssessment/AttemptAssessmentPage';
 import { ResultsPage } from '../pages/Student/Results/ResultsPage';
+import { StudentReportsPage } from '../pages/Student/Reports/ReportsPage';
 
 import { AdminDashboard } from '../pages/Admin/Dashboard/AdminDashboard';
 import { TestManagementPage } from '../pages/Admin/TestManagement/TestManagementPage';
@@ -36,6 +37,7 @@ export const AppRoutes = () => {
         <Route path={ROUTES.STUDENT_DASHBOARD} element={<StudentDashboard />} />
         <Route path={ROUTES.ATTEMPT_ASSESSMENT} element={<AttemptAssessmentPage />} />
         <Route path={ROUTES.RESULTS} element={<ResultsPage />} />
+        <Route path={ROUTES.STUDENT_REPORTS} element={<StudentReportsPage />} />
       </Route>
 
       {/* Protected Admin Portal Routes */}

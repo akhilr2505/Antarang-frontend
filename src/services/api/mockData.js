@@ -1,5 +1,3 @@
-import { assessmentsData, careerDatabase } from '../../data/assessments';
-
 export const MOCK_TENANT_ID = 'tnt_77f8a92b-8a4c-4e12-b91d-001122334455';
 export const MOCK_ORG_UNIT_ID = 'org_99a8b76c-5d4e-3f2a-1b0c-998877665544';
 

@@ -3,6 +3,7 @@ export const ROUTES = {
   STUDENT_DASHBOARD: '/dashboard',
   ATTEMPT_ASSESSMENT: '/assessments/:id',
   RESULTS: '/results',
+  STUDENT_REPORTS: '/reports',
   ADMIN_DASHBOARD: '/admin',
   ADMIN_TESTS: '/admin/tests',
   ADMIN_TEST_EDITOR: '/admin/tests/edit/:id',

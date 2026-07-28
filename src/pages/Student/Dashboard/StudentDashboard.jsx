@@ -16,14 +16,22 @@ export const StudentDashboard = () => {
 
   const completedCount = studentAssessments.filter(t => t.status === 'completed').length;
 
-  const handleStartTest = (assessment) => {
-    startAssessment(assessment);
-    showToast(`Started ${assessment.title}`);
-    navigate(ROUTES.ATTEMPT_ASSESSMENT.replace(':id', assessment.id));
+  const handleStartTest = async (assessment) => {
+    try {
+      await startAssessment(assessment);
+      showToast(`Started ${assessment.title}`);
+      navigate(ROUTES.ATTEMPT_ASSESSMENT.replace(':id', assessment.id));
+    } catch (error) {
+      showToast('Unable to start assessment. Please try again.');
+    }
   };
 
   const handleViewResults = () => {
     navigate(ROUTES.RESULTS);
+  };
+
+  const handleViewReports = () => {
+    navigate(ROUTES.STUDENT_REPORTS);
   };
 
   return (
@@ -190,7 +198,7 @@ export const StudentDashboard = () => {
             </p>
           </div>
           <div>
-            <button className="btn btn-primary" onClick={handleViewResults} style={{ width: 'auto', padding: '14px 28px' }}>
+            <button className="btn btn-primary" onClick={handleViewReports} style={{ width: 'auto', padding: '14px 28px' }}>
               Go to Reports &amp; Careers <ArrowRight size={16} />
             </button>
           </div>

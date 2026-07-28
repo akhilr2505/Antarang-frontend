@@ -1,7 +1,8 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import { assessmentsData } from '../data/assessments';
 import { deepClone, genId } from '../utils/formatters';
 import { LETTERS } from '../utils/constants';
+import { adminService } from '../services/admin.service';
 
 export const AdminContext = createContext(null);
 
@@ -12,8 +13,22 @@ export const AdminProvider = ({ children }) => {
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [editingQuestionIdx, setEditingQuestionIdx] = useState(null);
+  const [dashboardStats, setDashboardStats] = useState(null);
 
-  const adminCreateNewTest = () => {
+  useEffect(() => {
+    const loadDashboardStats = async () => {
+      try {
+        const stats = await adminService.getDashboardStats();
+        setDashboardStats(stats);
+      } catch (error) {
+        console.error('Unable to fetch dashboard stats:', error);
+      }
+    };
+
+    loadDashboardStats();
+  }, []);
+
+  const adminCreateNewTest = async () => {
     const newTest = {
       id: genId(),
       title: 'New Assessment',
@@ -27,18 +42,41 @@ export const AdminProvider = ({ children }) => {
       iconName: 'BrainCircuit',
       questions: []
     };
-    setAdminTests(prev => [...prev, newTest]);
-    setEditingTestDraft(deepClone(newTest));
-    return newTest;
+
+    try {
+      const persisted = await adminService.createAssessment(newTest);
+      const created = persisted || newTest;
+      setAdminTests(prev => [...prev, created]);
+      setEditingTestDraft(deepClone(created));
+      return created;
+    } catch (error) {
+      console.error('Unable to create new test:', error);
+      setAdminTests(prev => [...prev, newTest]);
+      setEditingTestDraft(deepClone(newTest));
+      return newTest;
+    }
   };
 
   const adminOpenTestEditor = (test) => {
     setEditingTestDraft(deepClone(test));
   };
 
-  const adminSaveTest = () => {
-    if (!editingTestDraft) return;
+  const adminSaveTest = async () => {
+    if (!editingTestDraft) return null;
     const updated = { ...editingTestDraft, questionsCount: editingTestDraft.questions.length };
+
+    if (!adminTests.some(t => t.id === updated.id)) {
+      try {
+        const persisted = await adminService.createAssessment(updated);
+        const created = persisted || updated;
+        setAdminTests(prev => [...prev, created]);
+        setEditingTestDraft(created);
+        return created;
+      } catch (error) {
+        console.error('Unable to create assessment on save:', error);
+      }
+    }
+
     setAdminTests(prev => prev.map(t => (t.id === updated.id ? updated : t)));
     setEditingTestDraft(updated);
     return updated;
@@ -166,7 +204,8 @@ export const AdminProvider = ({ children }) => {
         updateQField,
         updateOptField,
         addOption,
-        removeOption
+        removeOption,
+        dashboardStats
       }}
     >
       {children}

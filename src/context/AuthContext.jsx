@@ -8,14 +8,27 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
 
+  const normalizeUser = (user) => {
+    if (!user) return null;
+    const role = user.role || (user.userType ? user.userType.toLowerCase() :
+      (user.roles && user.roles.length ? user.roles[0].toLowerCase() : ''));
+
+    return {
+      ...user,
+      role,
+      name: user.name || `${user.firstName || ''}${user.lastName ? ` ${user.lastName}` : ''}`.trim() || user.username || ''
+    };
+  };
+
   const login = async (username, password) => {
     setLoginError('');
     setIsLoading(true);
     try {
       const res = await authService.login(username, password);
-      setCurrentUser(res.user);
+      const user = normalizeUser(res.user);
+      setCurrentUser(user);
       setIsLoading(false);
-      return res.user;
+      return user;
     } catch (err) {
       setLoginError(err.message || 'Login failed');
       setIsLoading(false);

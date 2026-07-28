@@ -16,8 +16,8 @@ export const TestManagementPage = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const handleAddTest = () => {
-    const newTest = adminCreateNewTest();
+  const handleAddTest = async () => {
+    const newTest = await adminCreateNewTest();
     showToast('New test created.');
     navigate(ROUTES.ADMIN_TEST_EDITOR.replace(':id', newTest.id));
   };
