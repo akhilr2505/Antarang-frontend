@@ -7,4 +7,5 @@ export const ROUTES = {
   ADMIN_DASHBOARD: '/admin',
   ADMIN_TESTS: '/admin/tests',
   ADMIN_TEST_EDITOR: '/admin/tests/edit/:id',
+  ADMIN_STUDENTS: '/admin/students',
 };

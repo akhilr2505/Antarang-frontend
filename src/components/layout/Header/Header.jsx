@@ -1,14 +1,18 @@
 import React from 'react';
 import { LogOut } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import { useToast } from '../../../hooks/useToast';
 import { Avatar } from '../../common/Avatar/Avatar';
+import { ROUTES } from '../../../config/routes';
 import logoPurple from '../../../assets/images/logos/Secondary Logo _ Logotype _ Purple.png';
 import logoWhite from '../../../assets/images/logos/Secondary Logo _ Logotype _ White .png';
 
-export const Header = ({ activeTab, onSelectTab }) => {
+export const Header = () => {
   const { currentUser, logout } = useAuth();
   const { showToast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   if (!currentUser) return null;
 
@@ -17,6 +21,22 @@ export const Header = ({ activeTab, onSelectTab }) => {
   const handleLogout = () => {
     logout();
     showToast('Logged out successfully.');
+    navigate(ROUTES.LOGIN, { replace: true });
+  };
+
+  // Determine active tab from current URL path
+  const path = location.pathname;
+  const activeTab =
+    path === ROUTES.ADMIN_TESTS || path.startsWith('/admin/tests')
+      ? 'tests'
+      : path === ROUTES.ADMIN_STUDENTS
+      ? 'students'
+      : 'overview';
+
+  const handleNavTab = (tab) => {
+    if (tab === 'overview') navigate(ROUTES.ADMIN_DASHBOARD);
+    else if (tab === 'tests') navigate(ROUTES.ADMIN_TESTS);
+    else if (tab === 'students') navigate(ROUTES.ADMIN_STUDENTS);
   };
 
   return (
@@ -26,7 +46,8 @@ export const Header = ({ activeTab, onSelectTab }) => {
           <img
             src={isAdmin ? logoWhite : logoPurple}
             alt="Antarang Foundation Logo"
-            style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
+            style={{ height: '36px', width: 'auto', objectFit: 'contain', cursor: 'pointer' }}
+            onClick={() => navigate(isAdmin ? ROUTES.ADMIN_DASHBOARD : ROUTES.STUDENT_DASHBOARD)}
           />
           {isAdmin && (
             <span
@@ -47,23 +68,23 @@ export const Header = ({ activeTab, onSelectTab }) => {
         </div>
 
         <div className="nav-right">
-          {isAdmin && onSelectTab && (
+          {isAdmin && (
             <div className="admin-tab-nav">
               <button
                 className={`admin-tab-btn${activeTab === 'overview' ? ' active' : ''}`}
-                onClick={() => onSelectTab('overview')}
+                onClick={() => handleNavTab('overview')}
               >
                 Overview
               </button>
               <button
                 className={`admin-tab-btn${activeTab === 'tests' ? ' active' : ''}`}
-                onClick={() => onSelectTab('tests')}
+                onClick={() => handleNavTab('tests')}
               >
                 Tests
               </button>
               <button
                 className={`admin-tab-btn${activeTab === 'students' ? ' active' : ''}`}
-                onClick={() => onSelectTab('students')}
+                onClick={() => handleNavTab('students')}
               >
                 Students
               </button>
@@ -95,3 +116,4 @@ export const Header = ({ activeTab, onSelectTab }) => {
     </nav>
   );
 };
+

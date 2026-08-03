@@ -17,6 +17,7 @@ import { StudentReportsPage } from '../pages/Student/Reports/ReportsPage';
 import { AdminDashboard } from '../pages/Admin/Dashboard/AdminDashboard';
 import { TestManagementPage } from '../pages/Admin/TestManagement/TestManagementPage';
 import { TestEditorPage } from '../pages/Admin/TestEditor/TestEditorPage';
+import { AdminStudentsPage } from '../pages/Admin/Students/AdminStudentsPage';
 
 export const AppRoutes = () => {
   return (
@@ -51,6 +52,7 @@ export const AppRoutes = () => {
         <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
         <Route path={ROUTES.ADMIN_TESTS} element={<TestManagementPage />} />
         <Route path={ROUTES.ADMIN_TEST_EDITOR} element={<TestEditorPage />} />
+        <Route path={ROUTES.ADMIN_STUDENTS} element={<AdminStudentsPage />} />
       </Route>
 
       {/* Fallback Catch-all Route */}
