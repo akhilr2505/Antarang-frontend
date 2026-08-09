@@ -528,17 +528,19 @@ export const mockClient = {
 
     // 17.1 Create Assessment
     if (url === '/api/v1/assessments') {
+      const incomingQuestions = Array.isArray(payload.questions) ? deepClone(payload.questions) : [];
       const newTest = {
-        id: genId(),
-        title: payload.name || 'New Assessment',
+        id: payload.id || genId(),
+        title: payload.title || payload.name || 'New Assessment',
         description: payload.description || 'Description',
-        duration: '10 mins',
-        questionsCount: 0,
-        type: payload.code ? payload.code.toLowerCase() : 'aptitude',
-        status: 'pending',
-        accentClass: 'primary-accent',
-        iconName: 'BrainCircuit',
-        questions: []
+        duration: payload.duration || '10 mins',
+        questionsCount: incomingQuestions.length,
+        type: payload.type || (payload.code ? payload.code.toLowerCase() : 'aptitude'),
+        difficulty: payload.difficulty || 'Medium',
+        status: payload.status || 'pending',
+        accentClass: payload.accentClass || 'primary-accent',
+        iconName: payload.iconName || 'BrainCircuit',
+        questions: incomingQuestions
       };
       testsStore.push(newTest);
       return createSuccessResponse(newTest, "Assessment created successfully");
