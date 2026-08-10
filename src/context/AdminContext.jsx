@@ -134,6 +134,28 @@ export const AdminProvider = ({ children }) => {
     setShowQuestionModal(false);
   };
 
+  const adminImportQuestions = (questions = []) => {
+    if (!editingTestDraft) return;
+
+    const normalizedQuestions = questions
+      .filter(Boolean)
+      .map(question => ({
+        ...question,
+        id: question.id || genId(),
+        options: question.options || []
+      }));
+
+    if (normalizedQuestions.length === 0) return;
+
+    setEditingTestDraft(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        questions: [...(prev.questions || []), ...normalizedQuestions]
+      };
+    });
+  };
+
   const adminDeleteQuestion = (idx) => {
     setEditingTestDraft(prev => (prev ? { ...prev, questions: prev.questions.filter((_, i) => i !== idx) } : prev));
   };
@@ -200,6 +222,7 @@ export const AdminProvider = ({ children }) => {
         updateDraftField,
         adminOpenQuestionEditor,
         adminSaveQuestion,
+        adminImportQuestions,
         adminDeleteQuestion,
         updateQField,
         updateOptField,

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, FileText, ArrowLeft, Save, ListOrdered, PlusCircle, HelpCircle, Pencil, Trash2, X, Info } from 'lucide-react';
+import { ChevronRight, FileText, ArrowLeft, Save, ListOrdered, PlusCircle, HelpCircle, Pencil, Trash2, X, Info, UploadCloud } from 'lucide-react';
 import { useAdmin } from '../../../hooks/useAdmin';
 import { useToast } from '../../../hooks/useToast';
 import { ROUTES } from '../../../config/routes';
+import { genId } from '../../../utils/formatters';
 
 export const TestEditorPage = () => {
   const {
@@ -16,6 +17,7 @@ export const TestEditorPage = () => {
     updateDraftField,
     adminOpenQuestionEditor,
     adminSaveQuestion,
+    adminImportQuestions,
     adminDeleteQuestion,
     updateQField,
     updateOptField,
@@ -24,6 +26,7 @@ export const TestEditorPage = () => {
   } = useAdmin();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const excelInputRef = useRef(null);
 
   if (!editingTestDraft) {
     navigate(ROUTES.ADMIN_TESTS);
@@ -50,6 +53,111 @@ export const TestEditorPage = () => {
     if (window.confirm('Delete this question?')) {
       adminDeleteQuestion(idx);
       showToast('Question deleted.');
+    }
+  };
+
+  const parseCsvLine = (line) => {
+    const columns = [];
+    let cell = '';
+    let insideQuotes = false;
+
+    for (let i = 0; i < line.length; i += 1) {
+      const ch = line[i];
+      const next = line[i + 1];
+
+      if (ch === '"') {
+        if (insideQuotes && next === '"') {
+          cell += '"';
+          i += 1;
+        } else {
+          insideQuotes = !insideQuotes;
+        }
+      } else if (ch === ',' && !insideQuotes) {
+        columns.push(cell);
+        cell = '';
+      } else {
+        cell += ch;
+      }
+    }
+
+    columns.push(cell);
+    return columns;
+  };
+
+  const handleExcelImport = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        throw new Error('The upload flow only accepts .csv question sheets in this build.');
+      }
+
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+      if (lines.length < 2) {
+        throw new Error('The selected file does not contain a question table.');
+      }
+
+      const headers = parseCsvLine(lines[0]).map(value => String(value || '').trim().toLowerCase());
+      const rows = lines.slice(1).map(line => {
+        const values = parseCsvLine(line);
+        return headers.reduce((acc, header, idx) => {
+          acc[header] = values[idx] || '';
+          return acc;
+        }, {});
+      });
+
+      const fileQuestions = rows.map((row, index) => {
+        const questionText = row.question || row.question_text || row.prompt || row.text || row['question text'];
+        if (!questionText || !String(questionText).trim()) {
+          return null;
+        }
+
+        const correctAnswerKey = row.correctanswer || row.correct_answer || row.answer || row.correct || row['correct answer'];
+        const correctAnswer = String(correctAnswerKey || 'A').trim().toUpperCase();
+
+        const optionMap = {
+          a: row.optiona || row.option_a || row.option1 || row.option_1 || row.a || row['a.'] || row['option a'],
+          b: row.optionb || row.option_b || row.option2 || row.option_2 || row.b || row['b.'] || row['option b'],
+          c: row.optionc || row.option_c || row.option3 || row.option_3 || row.c || row['c.'] || row['option c'],
+          d: row.optiond || row.option_d || row.option4 || row.option_4 || row.d || row['d.'] || row['option d']
+        };
+
+        const options = ['A', 'B', 'C', 'D'].map((letter) => {
+          const value = optionMap[letter.toLowerCase()];
+          return {
+            letter,
+            text: value || '',
+            weight: 0,
+            category: ''
+          };
+        }).filter(option => option.text && String(option.text).trim() !== '');
+
+        if (options.length < 2) {
+          throw new Error(`Question ${index + 1} must have at least two answer options.`);
+        }
+
+        return {
+          id: genId(),
+          question: String(questionText).trim(),
+          explanation: row.explanation || row.reason || '',
+          correctAnswer: ['A', 'B', 'C', 'D'].includes(correctAnswer) ? correctAnswer : 'A',
+          options
+        };
+      }).filter(Boolean);
+
+      if (fileQuestions.length === 0) {
+        throw new Error('No valid question rows were detected in the CSV sheet.');
+      }
+
+      adminImportQuestions(fileQuestions);
+      showToast(`${fileQuestions.length} question${fileQuestions.length === 1 ? '' : 's'} imported from ${file.name}.`);
+    } catch (error) {
+      console.error('Unable to import assessment questions:', error);
+      showToast(error.message || 'The workbook could not be imported.');
+    } finally {
+      event.target.value = '';
     }
   };
 
@@ -195,6 +303,17 @@ export const TestEditorPage = () => {
               <button className="btn btn-outline" style={{ width: 'auto', padding: '10px 20px' }} onClick={() => navigate(ROUTES.ADMIN_TESTS)}>
                 <ArrowLeft size={16} /> Back
               </button>
+              <label className="btn btn-outline" style={{ width: 'auto', padding: '10px 20px', cursor: 'pointer' }} htmlFor="excel-question-upload">
+                <UploadCloud size={16} /> Upload Excel
+              </label>
+              <input
+                id="excel-question-upload"
+                ref={excelInputRef}
+                type="file"
+                accept=".csv"
+                style={{ display: 'none' }}
+                onChange={handleExcelImport}
+              />
               <button className="btn btn-primary" style={{ width: 'auto', padding: '10px 24px' }} onClick={handleSaveTest}>
                 <Save size={16} /> Save Test
               </button>
