@@ -22,16 +22,22 @@ export const calculateAssessmentResults = (activeAssessment, selectedAnswers, cu
   if (activeAssessment.type === 'personality') {
     const scores = { R: 25, I: 25, A: 25, S: 25, E: 25, C: 25 };
     activeAssessment.questions.forEach(q => {
-      const selectedOption = q.options.find(op => op.letter === selectedAnswers[q.id]);
-      if (selectedOption && selectedOption.category) {
-        scores[selectedOption.category] += 12;
-      }
+      const ans = selectedAnswers[q.id];
+      const selectedLetters = Array.isArray(ans) ? ans : (ans ? [ans] : []);
+      selectedLetters.forEach(letter => {
+        const selectedOption = q.options.find(op => op.letter === letter);
+        if (selectedOption && selectedOption.category) {
+          scores[selectedOption.category] += 12;
+        }
+      });
     });
     newScores = scores;
   } else if (activeAssessment.type === 'aptitude') {
     let correctCount = 0;
     activeAssessment.questions.forEach(q => {
-      if (selectedAnswers[q.id] === q.correctAnswer) {
+      const ans = selectedAnswers[q.id];
+      const selectedLetters = Array.isArray(ans) ? ans : (ans ? [ans] : []);
+      if (selectedLetters.includes(q.correctAnswer)) {
         correctCount += 20;
       }
     });

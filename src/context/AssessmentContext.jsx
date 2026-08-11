@@ -55,11 +55,22 @@ export const AssessmentProvider = ({ children }) => {
     }
   };
 
-  const handleSelectOption = (questionId, optionLetter) => {
-    setSelectedAnswers(prev => ({
-      ...prev,
-      [questionId]: optionLetter
-    }));
+  const handleSelectOption = (questionId, optionLetter, isMultiSelect = false) => {
+    if (isMultiSelect) {
+      setSelectedAnswers(prev => {
+        const current = Array.isArray(prev[questionId]) ? prev[questionId] : [];
+        // Toggle: if already selected, deselect; otherwise add
+        const updated = current.includes(optionLetter)
+          ? current.filter(l => l !== optionLetter)
+          : [...current, optionLetter];
+        return { ...prev, [questionId]: updated.length > 0 ? updated : undefined };
+      });
+    } else {
+      setSelectedAnswers(prev => ({
+        ...prev,
+        [questionId]: optionLetter
+      }));
+    }
   };
 
   const handleNextQuestion = () => {

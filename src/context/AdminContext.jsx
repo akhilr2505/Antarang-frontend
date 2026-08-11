@@ -40,6 +40,8 @@ export const AdminProvider = ({ children }) => {
       description: 'Enter a description for this assessment.',
       accentClass: 'primary-accent',
       iconName: 'BrainCircuit',
+      timerEnabled: false,
+      timerMinutes: 10,
       questions: []
     };
 
@@ -105,6 +107,9 @@ export const AdminProvider = ({ children }) => {
             question: '',
             explanation: '',
             correctAnswer: 'A',
+            correctAnswers: [],
+            isMultiSelect: false,
+            isMandatory: false,
             options: [
               { letter: 'A', text: '', weight: 0, category: '' },
               { letter: 'B', text: '', weight: 0, category: '' },

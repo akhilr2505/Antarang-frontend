@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, FileText, ArrowLeft, Save, ListOrdered, PlusCircle, HelpCircle, Pencil, Trash2, X, Info, UploadCloud } from 'lucide-react';
+import { ChevronRight, FileText, ArrowLeft, Save, ListOrdered, PlusCircle, HelpCircle, Pencil, Trash2, X, Info, UploadCloud, Timer } from 'lucide-react';
 import { useAdmin } from '../../../hooks/useAdmin';
 import { useToast } from '../../../hooks/useToast';
 import { ROUTES } from '../../../config/routes';
@@ -298,6 +298,57 @@ export const TestEditorPage = () => {
                 </select>
               </div>
             </div>
+            {/* Timer Configuration */}
+            <div style={{
+              marginBottom: '20px',
+              padding: '16px',
+              borderRadius: '14px',
+              border: editingTestDraft.timerEnabled
+                ? '1.5px solid var(--color-accent-yellow)'
+                : '1.5px solid var(--color-border-light)',
+              backgroundColor: editingTestDraft.timerEnabled ? 'rgba(225,174,37,0.05)' : '#fff'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: editingTestDraft.timerEnabled ? '14px' : 0 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(editingTestDraft.timerEnabled)}
+                    onChange={e => updateDraftField('timerEnabled', e.target.checked)}
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--color-accent-yellow)', cursor: 'pointer' }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Timer size={16} color={editingTestDraft.timerEnabled ? 'var(--color-accent-yellow)' : 'var(--color-text-muted)'} />
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-dark-text)' }}>Enable Countdown Timer</span>
+                  </div>
+                </label>
+                {editingTestDraft.timerEnabled && (
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-accent-yellow)', background: 'rgba(225,174,37,0.15)', padding: '3px 8px', borderRadius: '8px' }}>
+                    TIMED
+                  </span>
+                )}
+              </div>
+
+              {editingTestDraft.timerEnabled && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">Time Limit (minutes)</label>
+                    <input
+                      className="form-input"
+                      style={{ paddingLeft: '16px' }}
+                      type="number"
+                      min={1}
+                      max={180}
+                      value={editingTestDraft.timerMinutes ?? 10}
+                      onChange={e => updateDraftField('timerMinutes', Math.max(1, Number(e.target.value)))}
+                    />
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', padding: '10px', background: '#f8fafc', borderRadius: '8px', lineHeight: 1.6, alignSelf: 'end' }}>
+                    <strong>Auto-submit</strong> when time runs out.<br />
+                    Students see a live countdown during the test.
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="admin-save-bar">
               <button className="btn btn-outline" style={{ width: 'auto', padding: '10px 20px' }} onClick={() => navigate(ROUTES.ADMIN_TESTS)}>
@@ -350,9 +401,19 @@ export const TestEditorPage = () => {
                       <p className="question-editor-text">
                         {q.question || <em style={{ color: 'var(--color-text-subtle)' }}>No question text</em>}
                       </p>
-                      <div className="question-editor-meta">
+                      <div className="question-editor-meta" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <span>{q.options.length} options</span>
                         {q.correctAnswer && <span>· Correct: <strong>{q.correctAnswer}</strong></span>}
+                        {q.isMandatory && (
+                          <span style={{ color: '#c53030', fontWeight: 700, fontSize: '11px', background: '#fff5f5', border: '1px solid #feb2b2', padding: '1px 6px', borderRadius: '10px' }}>
+                            ✱ Required
+                          </span>
+                        )}
+                        {q.isMultiSelect && (
+                          <span style={{ color: 'var(--color-primary-purple)', fontWeight: 700, fontSize: '11px', background: 'rgba(114,98,171,0.08)', border: '1px solid rgba(114,98,171,0.3)', padding: '1px 6px', borderRadius: '10px' }}>
+                            ☑ Multi-Select
+                          </span>
+                        )}
                       </div>
                       <div className="question-editor-options-preview">
                         {q.options.map(o => (
@@ -414,8 +475,8 @@ export const TestEditorPage = () => {
                   placeholder="Explain why the correct answer is right..."
                 />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '8px' }}>
+                <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label">Correct Answer</label>
                   <select
                     className="form-select"
@@ -425,7 +486,7 @@ export const TestEditorPage = () => {
                     {editingQuestion.options.map(o => <option key={o.letter} value={o.letter}>Option {o.letter}</option>)}
                   </select>
                 </div>
-                <div className="form-group">
+                <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Info size={13} color="var(--color-text-subtle)" /> Field Guide
                   </label>
@@ -434,6 +495,49 @@ export const TestEditorPage = () => {
                     <strong>Category:</strong> RIASEC code (R/I/A/S/E/C)
                   </div>
                 </div>
+              </div>
+
+              {/* Multi-Select & Mandatory Toggles */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                <label
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px',
+                    borderRadius: '12px', border: editingQuestion.isMultiSelect ? '1.5px solid var(--color-primary-purple)' : '1.5px solid var(--color-border-light)',
+                    backgroundColor: editingQuestion.isMultiSelect ? 'rgba(114,98,171,0.06)' : '#fff',
+                    cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={Boolean(editingQuestion.isMultiSelect)}
+                    onChange={e => updateQField('isMultiSelect', e.target.checked)}
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--color-primary-purple)', cursor: 'pointer' }}
+                  />
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-dark-text)' }}>Multi-Select</div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Allow selecting multiple answers</div>
+                  </div>
+                </label>
+
+                <label
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px',
+                    borderRadius: '12px', border: editingQuestion.isMandatory ? '1.5px solid #e53e3e' : '1.5px solid var(--color-border-light)',
+                    backgroundColor: editingQuestion.isMandatory ? '#fff5f5' : '#fff',
+                    cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={Boolean(editingQuestion.isMandatory)}
+                    onChange={e => updateQField('isMandatory', e.target.checked)}
+                    style={{ width: '16px', height: '16px', accentColor: '#e53e3e', cursor: 'pointer' }}
+                  />
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-dark-text)' }}>Required</div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Student must answer before submitting</div>
+                  </div>
+                </label>
               </div>
 
               <div style={{ marginTop: '8px' }}>
